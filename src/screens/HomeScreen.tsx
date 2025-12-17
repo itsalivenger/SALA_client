@@ -16,7 +16,11 @@ interface ButtonCard {
     onPress: () => void;
 }
 
-export default function HomeScreen() {
+interface HomeScreenProps {
+    onNavigate?: (route: string) => void;
+}
+
+export default function HomeScreen({ onNavigate }: HomeScreenProps) {
     const buttons: ButtonCard[] = [
         {
             id: 1,
@@ -24,7 +28,7 @@ export default function HomeScreen() {
             subtitle: 'Service standard',
             icon: 'package-variant',
             color: colors.brand,
-            onPress: () => console.log('Sala pressed'),
+            onPress: () => onNavigate?.('SalaServices'),
         },
         {
             id: 2,
