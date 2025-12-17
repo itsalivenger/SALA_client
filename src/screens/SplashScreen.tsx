@@ -23,7 +23,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
     return (
         <View style={styles.container}>
             <Image
-                source={require('../../assets/splash_logo_sala.png')}
+                source={require('../../assets/home_sala_noBg.png')}
                 style={styles.logo}
                 resizeMode="contain"
             />
