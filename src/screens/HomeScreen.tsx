@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, spacing, textStyles } from '../theme';
 
@@ -48,6 +48,11 @@ export default function HomeScreen() {
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
             {/* Header */}
             <View style={styles.header}>
+                <Image
+                    source={require('../../assets/splash_logo_sala.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
                 <Text style={styles.greeting}>Bienvenue sur SALA</Text>
                 <Text style={styles.subtitle}>Que souhaitez-vous faire aujourd'hui ?</Text>
             </View>
@@ -96,15 +101,23 @@ const styles = StyleSheet.create({
         paddingTop: spacing.lg,
         paddingBottom: spacing.xl,
         paddingHorizontal: spacing.sm,
+        alignItems: 'center',
+    },
+    logo: {
+        width: 120,
+        height: 60,
+        marginBottom: spacing.md,
     },
     greeting: {
         ...textStyles.h2,
         color: colors.brand,
         marginBottom: spacing.xs,
+        textAlign: 'center',
     },
     subtitle: {
         ...textStyles.body,
         color: colors.textSecondary,
+        textAlign: 'center',
     },
     cardsContainer: {
         gap: spacing.base,
