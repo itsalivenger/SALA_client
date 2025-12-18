@@ -1,10 +1,10 @@
 /**
  * Splash Screen
- * Initial screen with SALA logo, auto-navigates to onboarding
+ * Initial screen with SALA logo, auto-navigates to welcome
  */
 
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Image, StyleSheet, Animated } from 'react-native';
 import { colors } from '../theme';
 
 interface SplashScreenProps {
@@ -12,21 +12,32 @@ interface SplashScreenProps {
 }
 
 export default function SplashScreen({ onFinish }: SplashScreenProps) {
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
     useEffect(() => {
+        // Subtle fade-in animation for logo
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: true,
+        }).start();
+
         const timer = setTimeout(() => {
             onFinish();
-        }, 2500); // 2.5 seconds
+        }, 2000); // 2 seconds
 
         return () => clearTimeout(timer);
-    }, [onFinish]);
+    }, [onFinish, fadeAnim]);
 
     return (
         <View style={styles.container}>
-            <Image
-                source={require('../../assets/home_sala_noBg.png')}
-                style={styles.logo}
-                resizeMode="contain"
-            />
+            <Animated.View style={{ opacity: fadeAnim }}>
+                <Image
+                    source={require('../../assets/home_sala_noBg.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
+            </Animated.View>
         </View>
     );
 }
@@ -39,7 +50,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     logo: {
-        width: 200,
-        height: 200,
+        width: 180,
+        height: 180,
     },
 });
+
+
