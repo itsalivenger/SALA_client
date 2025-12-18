@@ -65,14 +65,12 @@ export default function WelcomeScreen({ onLogin, onRegister, onSkip }: WelcomeSc
                                 },
                             ]}
                         >
-                            <View style={styles.headlineContainer}>
-                                <Text style={styles.headline}>Bienvenue sur</Text>
-                                <Image
-                                    source={require('../../assets/home_sala_noBg.png')}
-                                    style={styles.logo}
-                                    resizeMode="contain"
-                                />
-                            </View>
+                            <Image
+                                source={require('../../assets/home_sala_noBg.png')}
+                                style={styles.logo}
+                                resizeMode="contain"
+                            />
+                            <Text style={styles.headline}>Bienvenue sur SALA</Text>
                             <Text style={styles.subtext}>
                                 Vos courses livrées par des professionnels vérifiés
                             </Text>
@@ -138,28 +136,24 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         paddingHorizontal: spacing.xl,
-        paddingBottom: spacing.xxl * 2,
+        paddingBottom: spacing.xxl,
     },
     textContainer: {
-        marginBottom: spacing.xxl,
+        marginBottom: spacing.xxl * 1.5,
         alignItems: 'center',
     },
-    headlineContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: spacing.md,
+    logo: {
+        width: 180,
+        height: 120,
+        marginBottom: spacing.xs,
     },
     headline: {
         ...textStyles.h1,
         color: colors.surface,
-    },
-    logo: {
-        width: 80,
-        height: 40,
-        marginLeft: spacing.xs,
+        textAlign: 'center',
+        marginBottom: spacing.sm,
     },
     subtext: {
         ...textStyles.body,
@@ -169,6 +163,7 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         gap: spacing.base,
+        marginTop: spacing.xl,
     },
     loginButton: {
         backgroundColor: colors.accent,
