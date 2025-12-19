@@ -9,12 +9,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import LanguageScreen from '../screens/LanguageScreen';
+import SupportScreen from '../screens/SupportScreen';
 import BottomNav from '../components/BottomNav';
 import { colors } from '../theme';
 import SalaServiceScreen from '../screens/SalaServiceScreen';
 
 type TabName = 'Accueil' | 'Historique' | 'Profil';
-type SubRoute = 'SalaServices' | null;
+type SubRoute = 'SalaServices' | 'Notifications' | 'Language' | 'Support' | null;
 
 export default function MainContainer() {
     const [activeTab, setActiveTab] = useState<TabName>('Accueil');
@@ -32,13 +35,19 @@ export default function MainContainer() {
             return <SalaServiceScreen onBack={() => setSubRoute(null)} />;
         }
 
+        if (activeTab === 'Profil') {
+            if (subRoute === 'Notifications') return <NotificationsScreen onBack={() => setSubRoute(null)} />;
+            if (subRoute === 'Language') return <LanguageScreen onBack={() => setSubRoute(null)} />;
+            if (subRoute === 'Support') return <SupportScreen onBack={() => setSubRoute(null)} />;
+        }
+
         switch (activeTab) {
             case 'Accueil':
                 return <HomeScreen onNavigate={(route) => setSubRoute(route as SubRoute)} />;
             case 'Historique':
                 return <HistoryScreen />;
             case 'Profil':
-                return <ProfileScreen />;
+                return <ProfileScreen onNavigate={(route) => setSubRoute(route as SubRoute)} />;
             default:
                 return <HomeScreen onNavigate={(route) => setSubRoute(route as SubRoute)} />;
         }
