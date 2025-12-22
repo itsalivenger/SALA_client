@@ -3,9 +3,10 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, spacing, textStyles } from '../theme';
+import { APP_LINKS } from '../config/links';
 
 interface ButtonCard {
     id: number;
@@ -44,7 +45,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
             subtitle: 'Guide d\'utilisation',
             icon: 'book-open-page-variant',
             color: colors.primary,
-            onPress: () => console.log('Tutoriel pressed'),
+            onPress: () => Linking.openURL(APP_LINKS.tutorial),
         },
     ];
 

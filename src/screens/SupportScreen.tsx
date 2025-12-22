@@ -11,9 +11,12 @@ import {
     ScrollView,
     TouchableOpacity,
     Linking,
+    TextInput,
+    Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, spacing, textStyles } from '../theme';
+import { APP_LINKS } from '../config/links';
 
 interface SupportItemProps {
     icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -69,14 +72,62 @@ const SupportItem = ({
 );
 
 export default function SupportScreen({ onBack }: { onBack: () => void }) {
-    const [currentView, setCurrentView] = React.useState<'main' | 'topics'>('main');
+    const [currentView, setCurrentView] = React.useState<'main' | 'topics' | 'form'>('main');
+    const [selectedTopic, setSelectedTopic] = React.useState<'Réclamations' | 'Question' | 'Autres' | null>(null);
+
+    // Form fields state
+    const [subject, setSubject] = React.useState('');
+    const [message, setMessage] = React.useState('');
+    const [orderId, setOrderId] = React.useState('');
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     const handlePress = (title: string) => {
-        if (title === 'Support Form') {
-            setCurrentView('topics');
-        } else {
-            console.log(`Pressed: ${title}`);
+        switch (title) {
+            case 'Support Form':
+                setCurrentView('topics');
+                break;
+            case 'FAQ':
+                Linking.openURL(APP_LINKS.faq);
+                break;
+            case 'Rules':
+                Linking.openURL(APP_LINKS.rules);
+                break;
+            case 'Terms':
+                Linking.openURL(APP_LINKS.terms);
+                break;
+            case 'Privacy':
+                Linking.openURL(APP_LINKS.privacy);
+                break;
+            default:
+                console.log(`Pressed: ${title}`);
         }
+    };
+
+    const handleTopicSelect = (topic: 'Réclamations' | 'Question' | 'Autres') => {
+        setSelectedTopic(topic);
+        setCurrentView('form');
+        // Reset fields
+        setSubject('');
+        setMessage('');
+        setOrderId('');
+    };
+
+    const handleSubmit = () => {
+        if (!message || (selectedTopic !== 'Réclamations' && !subject)) {
+            Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIsSubmitting(false);
+            Alert.alert(
+                'Succès',
+                'Votre demande a été envoyée avec succès. Notre équipe vous répondra dans les plus brefs délais.',
+                [{ text: 'OK', onPress: () => setCurrentView('main') }]
+            );
+        }, 1500);
     };
 
     const renderMainView = () => (
@@ -153,7 +204,7 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
             <View style={styles.topicGrid}>
                 <TouchableOpacity
                     style={styles.topicButton}
-                    onPress={() => console.log('Topic: Réclamations')}
+                    onPress={() => handleTopicSelect('Réclamations')}
                 >
                     <View style={[styles.topicIcon, { backgroundColor: colors.error + '10' }]}>
                         <MaterialCommunityIcons name="alert-circle-outline" size={32} color={colors.error} />
@@ -163,7 +214,7 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
 
                 <TouchableOpacity
                     style={styles.topicButton}
-                    onPress={() => console.log('Topic: Question')}
+                    onPress={() => handleTopicSelect('Question')}
                 >
                     <View style={[styles.topicIcon, { backgroundColor: colors.brand + '10' }]}>
                         <MaterialCommunityIcons name="help-rhombus-outline" size={32} color={colors.brand} />
@@ -173,7 +224,7 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
 
                 <TouchableOpacity
                     style={styles.topicButton}
-                    onPress={() => console.log('Topic: Autres')}
+                    onPress={() => handleTopicSelect('Autres')}
                 >
                     <View style={[styles.topicIcon, { backgroundColor: colors.disabled + '20' }]}>
                         <MaterialCommunityIcons name="dots-horizontal-circle-outline" size={32} color={colors.textSecondary} />
@@ -191,22 +242,96 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
         </View>
     );
 
+    const renderFormView = () => (
+        <ScrollView contentContainerStyle={styles.formContainer} keyboardShouldPersistTaps="handled">
+            <Text style={styles.formTitle}>{selectedTopic}</Text>
+            <Text style={styles.formSubtitle}>
+                Veuillez fournir les détails ci-dessous.
+            </Text>
+
+            <View style={styles.inputGroup}>
+                {selectedTopic === 'Réclamations' ? (
+                    <>
+                        <Text style={styles.inputLabel}>N° de commande (Optionnel)</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Ex: #ORD-12345"
+                            value={orderId}
+                            onChangeText={setOrderId}
+                            placeholderTextColor={colors.disabled}
+                        />
+                    </>
+                ) : (
+                    <>
+                        <Text style={styles.inputLabel}>Sujet *</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="L'objet de votre demande"
+                            value={subject}
+                            onChangeText={setSubject}
+                            placeholderTextColor={colors.disabled}
+                        />
+                    </>
+                )}
+
+                <Text style={styles.inputLabel}>Message *</Text>
+                <TextInput
+                    style={[styles.input, styles.textArea]}
+                    placeholder="Décrivez votre demande en détail..."
+                    value={message}
+                    onChangeText={setMessage}
+                    multiline
+                    numberOfLines={6}
+                    textAlignVertical="top"
+                    placeholderTextColor={colors.disabled}
+                />
+            </View>
+
+            <TouchableOpacity
+                style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+            >
+                <Text style={styles.submitButtonText}>
+                    {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
+                </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                style={styles.cancelLink}
+                onPress={() => setCurrentView('topics')}
+            >
+                <Text style={styles.cancelLinkText}>Changer d'objet</Text>
+            </TouchableOpacity>
+        </ScrollView>
+    );
+
+    const handleBack = () => {
+        if (currentView === 'form') {
+            setCurrentView('topics');
+        } else if (currentView === 'topics') {
+            setCurrentView('main');
+        } else {
+            onBack();
+        }
+    };
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity
-                    onPress={currentView === 'topics' ? () => setCurrentView('main') : onBack}
+                    onPress={handleBack}
                     style={styles.backButton}
                 >
                     <MaterialCommunityIcons name="arrow-left" size={24} color={colors.brand} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>
-                    {currentView === 'topics' ? 'Objet du contact' : 'Support & Contact'}
+                    {currentView === 'topics' ? 'Objet du contact' : currentView === 'form' ? 'Nouveau ticket' : 'Support & Contact'}
                 </Text>
             </View>
 
-            {currentView === 'main' ? renderMainView() : renderTopicSelection()}
+            {currentView === 'main' ? renderMainView() : currentView === 'topics' ? renderTopicSelection() : renderFormView()}
         </View>
     );
 }
@@ -364,5 +489,63 @@ const styles = StyleSheet.create({
     cancelTopicText: {
         ...textStyles.bodyBold,
         color: colors.textSecondary,
+    },
+    formContainer: {
+        padding: spacing.base,
+        paddingBottom: spacing.xxxl,
+    },
+    formTitle: {
+        ...textStyles.h2,
+        color: colors.brand,
+        marginTop: spacing.md,
+    },
+    formSubtitle: {
+        ...textStyles.body,
+        color: colors.textSecondary,
+        marginBottom: spacing.xl,
+    },
+    inputGroup: {
+        gap: spacing.base,
+    },
+    inputLabel: {
+        ...textStyles.label,
+        color: colors.textSecondary,
+        marginBottom: spacing.xs,
+    },
+    input: {
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 12,
+        padding: spacing.base,
+        color: colors.textPrimary,
+        ...textStyles.body,
+    },
+    textArea: {
+        minHeight: 120,
+    },
+    submitButton: {
+        backgroundColor: colors.brand,
+        padding: spacing.base,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: spacing.xl,
+    },
+    submitButtonDisabled: {
+        backgroundColor: colors.disabled,
+    },
+    submitButtonText: {
+        ...textStyles.bodyBold,
+        color: colors.surface,
+    },
+    cancelLink: {
+        alignItems: 'center',
+        marginTop: spacing.base,
+        padding: spacing.sm,
+    },
+    cancelLinkText: {
+        ...textStyles.label,
+        color: colors.textSecondary,
+        textDecorationLine: 'underline',
     }
 });
