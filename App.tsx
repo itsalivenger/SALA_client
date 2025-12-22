@@ -6,10 +6,12 @@ import WelcomeScreen from './src/screens/WelcomeScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpScreen from './src/screens/auth/OtpScreen';
 import MainContainer from './src/screens/MainContainer';
+import { ThemeProvider, useTheme } from './src/theme';
 
 type Screen = 'splash' | 'welcome' | 'login' | 'otp' | 'main';
 
-export default function App() {
+function AppContent() {
+  const { isDark } = useTheme();
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [userIdentity, setUserIdentity] = useState('');
 
@@ -27,7 +29,6 @@ export default function App() {
   };
 
   const handleOtpVerify = (code: string) => {
-    // In a real app, verify the code here
     console.log('Verifying code:', code);
     setCurrentScreen('main');
   };
@@ -79,10 +80,19 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
       {renderScreen()}
-      <StatusBar style="light" />
-    </SafeAreaProvider>
+    </>
   );
 }
 
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}

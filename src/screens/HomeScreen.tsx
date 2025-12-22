@@ -5,7 +5,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { colors, spacing, textStyles } from '../theme';
+import { useTheme } from '../theme';
+
 import { APP_LINKS } from '../config/links';
 
 interface ButtonCard {
@@ -22,7 +23,9 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ onNavigate }: HomeScreenProps) {
+    const { colors, spacing, textStyles, isDark } = useTheme();
     const buttons: ButtonCard[] = [
+
         {
             id: 1,
             title: 'Sala',
@@ -50,18 +53,18 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
     ];
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.greetingContainer}>
-                    <Text style={styles.greeting}>Bienvenue sur</Text>
+                    <Text style={[styles.greeting, { color: colors.brand }]}>Bienvenue sur</Text>
                     <Image
                         source={require('../../assets/home_sala_noBg.png')}
-                        style={styles.inlineLogo}
+                        style={[styles.inlineLogo, isDark && { tintColor: colors.textPrimary }]}
                         resizeMode="contain"
                     />
                 </View>
-                <Text style={styles.subtitle}>Que souhaitez-vous faire aujourd'hui ?</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Que souhaitez-vous faire aujourd'hui ?</Text>
             </View>
 
             {/* Button Cards */}
@@ -69,7 +72,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                 {buttons.map((button) => (
                     <TouchableOpacity
                         key={button.id}
-                        style={styles.card}
+                        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
                         onPress={button.onPress}
                         activeOpacity={0.7}
                     >
@@ -81,8 +84,8 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                             />
                         </View>
                         <View style={styles.cardContent}>
-                            <Text style={styles.cardTitle}>{button.title}</Text>
-                            <Text style={styles.cardSubtitle}>{button.subtitle}</Text>
+                            <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>{button.title}</Text>
+                            <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>{button.subtitle}</Text>
                         </View>
                         <MaterialCommunityIcons
                             name="chevron-right"
@@ -93,53 +96,50 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                 ))}
             </View>
         </ScrollView>
+
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
     },
     content: {
-        padding: spacing.base,
+        padding: 16,
     },
     header: {
-        paddingTop: spacing.lg,
-        paddingBottom: spacing.xl,
-        paddingHorizontal: spacing.sm,
+        paddingTop: 32,
+        paddingBottom: 40,
+        paddingHorizontal: 8,
         alignItems: 'center',
     },
     greetingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: spacing.xs,
+        marginBottom: 4,
     },
     inlineLogo: {
         width: 50,
         height: 36,
     },
     greeting: {
-        ...textStyles.h2,
-        color: colors.brand,
+        fontSize: 28,
+        fontWeight: 'bold',
     },
     subtitle: {
-        ...textStyles.body,
-        color: colors.textSecondary,
+        fontSize: 16,
         textAlign: 'center',
     },
     cardsContainer: {
-        gap: spacing.base,
+        gap: 16,
     },
     card: {
-        backgroundColor: colors.surface,
         borderRadius: 16,
-        padding: spacing.base,
+        padding: 16,
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: colors.border,
         minHeight: 90,
     },
     iconContainer: {
@@ -148,18 +148,17 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: spacing.base,
+        marginRight: 16,
     },
     cardContent: {
         flex: 1,
     },
     cardTitle: {
-        ...textStyles.h3,
-        color: colors.textPrimary,
+        fontSize: 20,
+        fontWeight: 'bold',
         marginBottom: 4,
     },
     cardSubtitle: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
+        fontSize: 12,
     },
 });

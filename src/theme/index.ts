@@ -1,38 +1,20 @@
-/**
- * SALA Theme System
- * Central export for all design tokens
- * Ready for future dark mode extension
- */
-
-import colors, { lightTheme, darkTheme } from './colors';
+import { lightColors, darkColors } from './colors';
 import spacing from './spacing';
 import typography, { textStyles } from './typography';
+import { ThemeProvider, ThemeContext } from './ThemeProvider';
+import { useTheme } from './useTheme';
 
-export const theme = {
-    colors,
+export {
+    lightColors,
+    darkColors,
     spacing,
     typography,
     textStyles,
+    ThemeProvider,
+    ThemeContext,
+    useTheme
 };
 
-// Theme variants (for future dark mode implementation)
-export const themes = {
-    light: {
-        ...lightTheme,
-        spacing,
-        typography,
-        textStyles,
-    },
-    dark: {
-        ...darkTheme,
-        spacing,
-        typography,
-        textStyles,
-    },
-};
+export type { ThemeMode } from './ThemeProvider';
+export type { Colors } from './colors';
 
-export type Theme = typeof theme;
-export type ThemeMode = 'light' | 'dark';
-
-export { colors, spacing, typography, textStyles };
-export default theme;

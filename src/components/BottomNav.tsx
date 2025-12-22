@@ -7,7 +7,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, textStyles } from '../theme';
+import { useTheme } from '../theme';
+
 
 type TabName = 'Accueil' | 'Historique' | 'Profil';
 
@@ -22,7 +23,9 @@ interface BottomNavProps {
 }
 
 export default function BottomNav({ activeTab, onTabPress }: BottomNavProps) {
+    const { colors, textStyles } = useTheme();
     const insets = useSafeAreaInsets();
+
 
     const tabs: TabConfig[] = [
         { name: 'Accueil', icon: 'home-outline' },
@@ -31,7 +34,11 @@ export default function BottomNav({ activeTab, onTabPress }: BottomNavProps) {
     ];
 
     return (
-        <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+        <View style={[styles.container, {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+            paddingBottom: Math.max(insets.bottom, 8)
+        }]}>
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.name;
                 const iconColor = isActive ? colors.primary : colors.textSecondary;
@@ -51,7 +58,8 @@ export default function BottomNav({ activeTab, onTabPress }: BottomNavProps) {
                         <Text
                             style={[
                                 styles.tabText,
-                                isActive && styles.activeTabText,
+                                { color: colors.textSecondary },
+                                isActive && [styles.activeTabText, { color: colors.primary }],
                             ]}
                         >
                             {tab.name}
@@ -60,15 +68,14 @@ export default function BottomNav({ activeTab, onTabPress }: BottomNavProps) {
                 );
             })}
         </View>
+
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        backgroundColor: colors.surface,
         borderTopWidth: 1,
-        borderTopColor: colors.border,
         paddingTop: 8,
     },
     tab: {
@@ -78,14 +85,11 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
     },
     tabText: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
         fontWeight: '500',
         fontSize: 11,
         marginTop: 4,
     },
     activeTabText: {
-        color: colors.primary,
         fontWeight: '600',
     },
 });
