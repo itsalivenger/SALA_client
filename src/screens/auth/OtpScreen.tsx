@@ -10,8 +10,9 @@ import {
     Animated,
     ImageBackground,
 } from 'react-native';
-import { colors, spacing, textStyles } from '../../theme';
+import { useTheme } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface OtpScreenProps {
@@ -21,10 +22,12 @@ interface OtpScreenProps {
 }
 
 export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps) {
+    const { colors, spacing, textStyles, isDark } = useTheme();
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(59);
     const inputs = useRef<Array<TextInput | null>>([]);
     const fadeAnim = useRef(new Animated.Value(0)).current;
+
 
     useEffect(() => {
         // Animation
@@ -89,13 +92,13 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
                     </View>
 
                     <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-                        <Text style={styles.title}>Vérification</Text>
-                        <Text style={styles.subtitle}>
+                        <Text style={[styles.title, { color: colors.surface }]}>Vérification</Text>
+                        <Text style={[styles.subtitle, { color: colors.surface }]}>
                             Nous avons envoyé un code de vérification à{' '}
-                            <Text style={styles.identityHighlight}>{identity}</Text>
+                            <Text style={[styles.identityHighlight, { color: colors.surface }]}>{identity}</Text>
                         </Text>
 
-                        <View style={styles.inputCard}>
+                        <View style={[styles.inputCard, { backgroundColor: isDark ? colors.surface + 'EE' : 'rgba(255,255,255,0.95)' }]}>
                             <View style={styles.otpContainer}>
                                 {code.map((digit, index) => (
                                     <TextInput
@@ -103,7 +106,8 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
                                         ref={(ref) => { inputs.current[index] = ref; }}
                                         style={[
                                             styles.otpInput,
-                                            digit ? styles.otpInputFilled : null,
+                                            { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary },
+                                            digit ? [styles.otpInputFilled, { borderColor: colors.accent }] : null,
                                         ]}
                                         value={digit}
                                         onChangeText={(text) => handleCodeChange(text, index)}
@@ -116,7 +120,7 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
                             </View>
 
                             <View style={styles.timerContainer}>
-                                <Text style={styles.timerText}>
+                                <Text style={[styles.timerText, { color: colors.textSecondary }]}>
                                     {timer > 0
                                         ? `Renvoyer le code dans 0:${timer.toString().padStart(2, '0')}`
                                         : 'Vous ne recevez pas de code ?'}
@@ -128,7 +132,8 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
                                     <Text
                                         style={[
                                             styles.resendText,
-                                            timer > 0 && styles.resendTextDisabled,
+                                            { color: colors.accent },
+                                            timer > 0 && [styles.resendTextDisabled, { color: colors.disabled }],
                                         ]}
                                     >
                                         Renvoyer
@@ -139,16 +144,18 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
                             <TouchableOpacity
                                 style={[
                                     styles.verifyButton,
-                                    code.some((d) => !d) && styles.verifyButtonDisabled,
+                                    { backgroundColor: colors.accent },
+                                    code.some((d) => !d) && [styles.verifyButtonDisabled, { backgroundColor: colors.disabled }],
                                 ]}
                                 onPress={() => onVerify(code.join(''))}
                                 disabled={code.some((d) => !d)}
                                 activeOpacity={0.8}
                             >
-                                <Text style={styles.verifyButtonText}>Vérifier</Text>
+                                <Text style={[styles.verifyButtonText, { color: colors.textOnPrimary }]}>Vérifier</Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
+
                 </SafeAreaView>
             </ImageBackground>
         </KeyboardAvoidingView>
@@ -167,8 +174,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
     },
     header: {
-        paddingHorizontal: spacing.base,
-        paddingTop: spacing.base,
+        paddingHorizontal: 16,
+        paddingTop: 16,
     },
     backButton: {
         width: 40,
@@ -180,28 +187,25 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        paddingHorizontal: spacing.xl,
+        paddingHorizontal: 32,
         justifyContent: 'center',
     },
     title: {
-        ...textStyles.h2,
-        color: colors.surface,
-        marginBottom: spacing.xs,
+        fontSize: 32,
+        fontWeight: 'bold',
+        marginBottom: 4,
     },
     subtitle: {
-        ...textStyles.body,
-        color: colors.surface,
+        fontSize: 16,
         opacity: 0.8,
-        marginBottom: spacing.xxl,
+        marginBottom: 48,
     },
     identityHighlight: {
         fontWeight: '700',
-        color: colors.surface,
     },
     inputCard: {
-        backgroundColor: 'rgba(255,255,255,0.95)',
         borderRadius: 20,
-        padding: spacing.xl,
+        padding: 32,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.2,
@@ -211,51 +215,44 @@ const styles = StyleSheet.create({
     otpContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: spacing.xl,
+        marginBottom: 32,
     },
     otpInput: {
         width: (Platform.OS === 'ios' ? 44 : 40),
         height: 56,
-        backgroundColor: colors.background,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: colors.border,
         textAlign: 'center',
-        ...textStyles.h3,
-        color: colors.textPrimary,
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     otpInputFilled: {
-        borderColor: colors.accent,
         borderWidth: 2,
     },
     timerContainer: {
         alignItems: 'center',
-        marginBottom: spacing.xl,
+        marginBottom: 32,
     },
     timerText: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
-        marginBottom: spacing.xs,
+        fontSize: 12,
+        marginBottom: 4,
     },
     resendText: {
-        ...textStyles.bodyBold,
-        color: colors.accent,
+        fontWeight: 'bold',
+        fontSize: 16,
     },
     resendTextDisabled: {
-        color: colors.disabled,
     },
     verifyButton: {
-        backgroundColor: colors.accent,
         height: 56,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
     },
     verifyButtonDisabled: {
-        backgroundColor: colors.disabled,
     },
     verifyButtonText: {
-        ...textStyles.bodyBold,
-        color: colors.textOnPrimary,
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });

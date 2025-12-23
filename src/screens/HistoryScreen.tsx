@@ -4,32 +4,33 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, textStyles } from '../theme';
+import { useTheme } from '../theme';
+
 
 export default function HistoryScreen() {
+    const { colors } = useTheme();
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Historique</Text>
-            <Text style={styles.subtitle}>Vos transactions</Text>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <Text style={[styles.title, { color: colors.brand }]}>Historique</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Vos transactions</Text>
         </View>
     );
 }
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: spacing.xl,
+        padding: 32,
     },
     title: {
-        ...textStyles.h1,
-        color: colors.brand,
-        marginBottom: spacing.md,
+        fontSize: 32,
+        fontWeight: 'bold',
+        marginBottom: 16,
     },
     subtitle: {
-        ...textStyles.body,
-        color: colors.textSecondary,
+        fontSize: 16,
     },
 });

@@ -13,7 +13,8 @@ import {
     Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { colors, spacing, textStyles } from '../theme';
+import { useTheme } from '../theme';
+
 
 // Types
 interface Notification {
@@ -60,41 +61,44 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     }
 ];
 
-const getTypeIcon = (type: Notification['type']) => {
-    switch (type) {
-        case 'order': return 'moped';
-        case 'finance': return 'wallet-outline';
-        case 'compliance': return 'shield-check-outline';
-        default: return 'bell-outline';
-    }
-};
-
-const getTypeColor = (type: Notification['type']) => {
-    switch (type) {
-        case 'order': return colors.accent;
-        case 'finance': return colors.success;
-        case 'compliance': return colors.brand;
-        default: return colors.textSecondary;
-    }
-};
-
 export default function NotificationsScreen({ onBack }: { onBack: () => void }) {
+    const { colors, spacing, textStyles } = useTheme();
+
+    const getTypeIcon = (type: Notification['type']) => {
+        switch (type) {
+            case 'order': return 'moped';
+            case 'finance': return 'wallet-outline';
+            case 'compliance': return 'shield-check-outline';
+            default: return 'bell-outline';
+        }
+    };
+
+    const getTypeColor = (type: Notification['type']) => {
+
+        switch (type) {
+            case 'order': return colors.accent;
+            case 'finance': return colors.success;
+            case 'compliance': return colors.brand;
+            default: return colors.textSecondary;
+        }
+    };
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <MaterialCommunityIcons name="arrow-left" size={24} color={colors.brand} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Notifications</Text>
+                <Text style={[styles.headerTitle, { color: colors.brand }]}>Notifications</Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.listContainer}>
+                <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     {MOCK_NOTIFICATIONS.map((notif, index) => (
                         <TouchableOpacity
                             key={notif.id}
-                            style={[styles.itemContainer, !notif.isRead && styles.unreadBackground]}
+                            style={[styles.itemContainer, !notif.isRead && [styles.unreadBackground, { backgroundColor: colors.brand + '05' }]]}
                             activeOpacity={0.7}
                         >
                             <View style={[styles.iconBox, { backgroundColor: getTypeColor(notif.type) + '15' }]}>
@@ -106,63 +110,58 @@ export default function NotificationsScreen({ onBack }: { onBack: () => void }) 
                             </View>
                             <View style={styles.textContainer}>
                                 <View style={styles.titleRow}>
-                                    <Text style={styles.itemTitle}>{notif.title}</Text>
-                                    {!notif.isRead && <View style={styles.unreadDot} />}
+                                    <Text style={[styles.itemTitle, { color: colors.textPrimary }]}>{notif.title}</Text>
+                                    {!notif.isRead && <View style={[styles.unreadDot, { backgroundColor: colors.accent }]} />}
                                 </View>
-                                <Text style={styles.itemDescription} numberOfLines={2}>
+                                <Text style={[styles.itemDescription, { color: colors.textSecondary }]} numberOfLines={2}>
                                     {notif.message}
                                 </Text>
-                                <Text style={styles.itemTime}>{notif.time}</Text>
+                                <Text style={[styles.itemTime, { color: colors.disabled }]}>{notif.time}</Text>
                             </View>
-                            {index < MOCK_NOTIFICATIONS.length - 1 && <View style={styles.divider} />}
+                            {index < MOCK_NOTIFICATIONS.length - 1 && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
                         </TouchableOpacity>
                     ))}
                 </View>
             </ScrollView>
         </View>
+
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.base,
-        backgroundColor: colors.surface,
+        padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        paddingTop: spacing.lg,
+        paddingTop: 32,
     },
     backButton: {
-        padding: spacing.sm,
-        marginLeft: -spacing.sm,
+        padding: 8,
+        marginLeft: -8,
     },
     headerTitle: {
-        ...textStyles.h3,
-        color: colors.brand,
-        marginLeft: spacing.sm,
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginLeft: 8,
     },
     content: {
-        paddingTop: spacing.base,
-        paddingBottom: spacing.xxxl,
+        paddingTop: 16,
+        paddingBottom: 48,
     },
     listContainer: {
-        backgroundColor: colors.surface,
         borderTopWidth: 1,
         borderBottomWidth: 1,
-        borderColor: colors.border,
     },
     itemContainer: {
         flexDirection: 'row',
-        padding: spacing.base,
-        paddingVertical: spacing.lg,
+        padding: 16,
+        paddingVertical: 24,
     },
     unreadBackground: {
-        backgroundColor: colors.brand + '05',
     },
     iconBox: {
         width: 48,
@@ -170,7 +169,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: spacing.md,
+        marginRight: 12,
     },
     textContainer: {
         flex: 1,
@@ -182,27 +181,23 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     itemTitle: {
-        ...textStyles.bodyBold,
-        color: colors.textPrimary,
+        fontWeight: 'bold',
+        fontSize: 16,
         flex: 1,
     },
     unreadDot: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: colors.accent,
-        marginLeft: spacing.sm,
+        marginLeft: 8,
     },
     itemDescription: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
+        fontSize: 12,
         lineHeight: 18,
         marginBottom: 8,
     },
     itemTime: {
-        ...textStyles.label,
         fontSize: 10,
-        color: colors.disabled,
     },
     divider: {
         position: 'absolute',
@@ -210,6 +205,5 @@ const styles = StyleSheet.create({
         right: 0,
         left: 70,
         height: 1,
-        backgroundColor: colors.border,
     }
 });

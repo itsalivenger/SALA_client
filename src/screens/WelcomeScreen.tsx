@@ -14,7 +14,8 @@ import {
     Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, textStyles } from '../theme';
+import { useTheme } from '../theme';
+
 
 interface WelcomeScreenProps {
     onLogin: () => void;
@@ -23,8 +24,10 @@ interface WelcomeScreenProps {
 }
 
 export default function WelcomeScreen({ onLogin, onRegister, onSkip }: WelcomeScreenProps) {
+    const { colors, spacing, textStyles, isDark } = useTheme();
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(20)).current;
+
 
     useEffect(() => {
         Animated.parallel([
@@ -67,11 +70,11 @@ export default function WelcomeScreen({ onLogin, onRegister, onSkip }: WelcomeSc
                         >
                             <Image
                                 source={require('../../assets/home_sala_noBg.png')}
-                                style={styles.logo}
+                                style={[styles.logo, isDark && { tintColor: colors.textPrimary }]}
                                 resizeMode="contain"
                             />
-                            <Text style={styles.headline}>Bienvenue sur SALA</Text>
-                            <Text style={styles.subtext}>
+                            <Text style={[styles.headline, { color: colors.surface }]}>Bienvenue sur SALA</Text>
+                            <Text style={[styles.subtext, { color: colors.surface }]}>
                                 Vos courses livrées par des professionnels vérifiés
                             </Text>
                         </Animated.View>
@@ -86,22 +89,23 @@ export default function WelcomeScreen({ onLogin, onRegister, onSkip }: WelcomeSc
                             ]}
                         >
                             <TouchableOpacity
-                                style={styles.loginButton}
+                                style={[styles.loginButton, { backgroundColor: colors.accent }]}
                                 onPress={onLogin}
                                 activeOpacity={0.8}
                             >
-                                <Text style={styles.loginButtonText}>Se connecter</Text>
+                                <Text style={[styles.loginButtonText, { color: colors.textOnPrimary }]}>Se connecter</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={styles.registerButton}
+                                style={[styles.registerButton, { borderColor: colors.surface }]}
                                 onPress={onRegister}
                                 activeOpacity={0.8}
                             >
-                                <Text style={styles.registerButtonText}>Créer un compte</Text>
+                                <Text style={[styles.registerButtonText, { color: colors.surface }]}>Créer un compte</Text>
                             </TouchableOpacity>
                         </Animated.View>
                     </View>
+
                 </SafeAreaView>
             </ImageBackground>
         </View>
@@ -121,52 +125,50 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'flex-end',
-        paddingHorizontal: spacing.xl,
-        paddingTop: spacing.md,
+        paddingHorizontal: 20, // spacing tokens fallback
+        paddingTop: 16,
     },
     skipButton: {
-        paddingVertical: spacing.sm,
-        paddingHorizontal: spacing.md,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
         backgroundColor: 'rgba(255,255,255,0.2)',
         borderRadius: 20,
     },
     skipText: {
-        ...textStyles.captionBold,
-        color: colors.surface,
+        fontWeight: 'bold',
+        fontSize: 10,
     },
     content: {
         flex: 1,
         justifyContent: 'center',
-        paddingHorizontal: spacing.xl,
-        paddingBottom: spacing.xxl,
+        paddingHorizontal: 20,
+        paddingBottom: 32,
     },
     textContainer: {
-        marginBottom: spacing.xxl * 1.5,
+        marginBottom: 48,
         alignItems: 'center',
     },
     logo: {
         width: 180,
         height: 120,
-        marginBottom: spacing.xs,
+        marginBottom: 4,
     },
     headline: {
-        ...textStyles.h1,
-        color: colors.surface,
+        fontSize: 32,
+        fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: spacing.sm,
+        marginBottom: 8,
     },
     subtext: {
-        ...textStyles.body,
-        color: colors.surface,
+        fontSize: 16,
         textAlign: 'center',
         opacity: 0.9,
     },
     buttonContainer: {
-        gap: spacing.base,
-        marginTop: spacing.xl,
+        gap: 16,
+        marginTop: 24,
     },
     loginButton: {
-        backgroundColor: colors.accent,
         height: 56,
         borderRadius: 12,
         alignItems: 'center',
@@ -178,8 +180,8 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     loginButtonText: {
-        ...textStyles.bodyBold,
-        color: colors.textOnPrimary,
+        fontWeight: 'bold',
+        fontSize: 16,
     },
     registerButton: {
         backgroundColor: 'transparent',
@@ -188,11 +190,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: colors.surface,
     },
     registerButtonText: {
-        ...textStyles.bodyBold,
-        color: colors.surface,
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });
 

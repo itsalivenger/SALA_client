@@ -13,13 +13,15 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import SupportScreen from '../screens/SupportScreen';
 import BottomNav from '../components/BottomNav';
-import { colors } from '../theme';
+import { useTheme } from '../theme';
+
 import SalaServiceScreen from '../screens/SalaServiceScreen';
 
 type TabName = 'Accueil' | 'Historique' | 'Profil';
 type SubRoute = 'SalaServices' | 'Notifications' | 'Language' | 'Support' | null;
 
 export default function MainContainer() {
+    const { colors } = useTheme();
     const [activeTab, setActiveTab] = useState<TabName>('Accueil');
     const [subRoute, setSubRoute] = useState<SubRoute>(null);
 
@@ -54,7 +56,7 @@ export default function MainContainer() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
             <View style={styles.screenContainer}>
                 {renderScreen()}
             </View>
@@ -63,10 +65,10 @@ export default function MainContainer() {
     );
 }
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
     },
     screenContainer: {
         flex: 1,

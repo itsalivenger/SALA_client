@@ -15,8 +15,9 @@ import {
     Animated,
     ImageBackground,
 } from 'react-native';
-import { colors, spacing, textStyles } from '../../theme';
+import { useTheme } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+
 
 interface LoginScreenProps {
     onContinue: (identity: string) => void;
@@ -24,8 +25,10 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
+    const { colors, spacing, textStyles, isDark } = useTheme();
     const [identity, setIdentity] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -62,13 +65,13 @@ export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
                     </View>
 
                     <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-                        <Text style={styles.title}>Connexion</Text>
-                        <Text style={styles.subtitle}>
+                        <Text style={[styles.title, { color: colors.surface }]}>Connexion</Text>
+                        <Text style={[styles.subtitle, { color: colors.surface }]}>
                             Entrez votre numéro de téléphone ou votre e-mail pour continuer.
                         </Text>
 
-                        <View style={styles.inputContainer}>
-                            <View style={styles.inputWrapper}>
+                        <View style={[styles.inputContainer, { backgroundColor: isDark ? colors.surface + 'EE' : 'rgba(255,255,255,0.95)' }]}>
+                            <View style={[styles.inputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                                 <Ionicons
                                     name="person-outline"
                                     size={20}
@@ -76,7 +79,7 @@ export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { color: colors.textPrimary }]}
                                     placeholder="Téléphone ou e-mail"
                                     placeholderTextColor={colors.textSecondary}
                                     value={identity}
@@ -95,34 +98,37 @@ export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
                                     <View
                                         style={[
                                             styles.checkbox,
-                                            rememberMe && styles.checkboxActive,
+                                            { borderColor: colors.disabled },
+                                            rememberMe && [styles.checkboxActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
                                         ]}
                                     >
                                         {rememberMe && (
                                             <Ionicons name="checkmark" size={12} color={colors.surface} />
                                         )}
                                     </View>
-                                    <Text style={styles.checkboxLabel}>Se souvenir de moi</Text>
+                                    <Text style={[styles.checkboxLabel, { color: colors.textSecondary }]}>Se souvenir de moi</Text>
                                 </TouchableOpacity>
                             </View>
 
                             <TouchableOpacity
                                 style={[
                                     styles.continueButton,
-                                    !identity && styles.continueButtonDisabled,
+                                    { backgroundColor: colors.accent },
+                                    !identity && [styles.continueButtonDisabled, { backgroundColor: colors.disabled }],
                                 ]}
                                 onPress={handleContinue}
                                 disabled={!identity}
                                 activeOpacity={0.8}
                             >
-                                <Text style={styles.continueButtonText}>Continuer</Text>
+                                <Text style={[styles.continueButtonText, { color: colors.textOnPrimary }]}>Continuer</Text>
                             </TouchableOpacity>
 
-                            <Text style={styles.guidanceText}>
+                            <Text style={[styles.guidanceText, { color: colors.textSecondary }]}>
                                 Vous recevrez un code par SMS ou e-mail pour vérifier votre compte.
                             </Text>
                         </View>
                     </Animated.View>
+
                 </View>
             </ImageBackground>
         </KeyboardAvoidingView>
@@ -138,11 +144,11 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)', // Darker overlay for login context
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     header: {
         paddingTop: Platform.OS === 'ios' ? 60 : 40,
-        paddingHorizontal: spacing.base,
+        paddingHorizontal: 16,
     },
     backButton: {
         width: 40,
@@ -154,24 +160,22 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        paddingHorizontal: spacing.xl,
+        paddingHorizontal: 32,
         justifyContent: 'center',
     },
     title: {
-        ...textStyles.h2,
-        color: colors.surface,
-        marginBottom: spacing.xs,
+        fontSize: 32,
+        fontWeight: 'bold',
+        marginBottom: 4,
     },
     subtitle: {
-        ...textStyles.body,
-        color: colors.surface,
+        fontSize: 16,
         opacity: 0.8,
-        marginBottom: spacing.xxl,
+        marginBottom: 48,
     },
     inputContainer: {
-        backgroundColor: 'rgba(255,255,255,0.95)',
         borderRadius: 20,
-        padding: spacing.xl,
+        padding: 32,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.2,
@@ -181,27 +185,24 @@ const styles = StyleSheet.create({
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.background,
         borderRadius: 12,
-        paddingHorizontal: spacing.base,
+        paddingHorizontal: 16,
         height: 56,
-        marginBottom: spacing.base,
+        marginBottom: 16,
         borderWidth: 1,
-        borderColor: colors.border,
     },
     inputIcon: {
-        marginRight: spacing.sm,
+        marginRight: 8,
     },
     input: {
         flex: 1,
-        ...textStyles.body,
-        color: colors.textPrimary,
+        fontSize: 16,
     },
     row: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: spacing.xl,
+        marginBottom: 32,
     },
     checkboxContainer: {
         flexDirection: 'row',
@@ -212,37 +213,30 @@ const styles = StyleSheet.create({
         height: 18,
         borderRadius: 4,
         borderWidth: 1,
-        borderColor: colors.disabled,
-        marginRight: spacing.sm,
+        marginRight: 8,
         alignItems: 'center',
         justifyContent: 'center',
     },
     checkboxActive: {
-        backgroundColor: colors.primary,
-        borderColor: colors.primary,
     },
     checkboxLabel: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
+        fontSize: 12,
     },
     continueButton: {
-        backgroundColor: colors.accent,
         height: 56,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: spacing.lg,
+        marginBottom: 24,
     },
     continueButtonDisabled: {
-        backgroundColor: colors.disabled,
     },
     continueButtonText: {
-        ...textStyles.bodyBold,
-        color: colors.textOnPrimary,
+        fontWeight: 'bold',
+        fontSize: 16,
     },
     guidanceText: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
+        fontSize: 12,
         textAlign: 'center',
         lineHeight: 18,
     },

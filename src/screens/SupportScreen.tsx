@@ -15,7 +15,8 @@ import {
     Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { colors, spacing, textStyles } from '../theme';
+import { useTheme } from '../theme';
+
 import { APP_LINKS } from '../config/links';
 
 interface SupportItemProps {
@@ -37,43 +38,52 @@ const SupportItem = ({
     subtitle,
     onPress,
     showExternal = true,
-    titleColor = colors.textPrimary,
-    iconColor = colors.textSecondary,
+    titleColor,
+    iconColor,
     badge,
     badgeColor,
     isLast = false
-}: SupportItemProps) => (
-    <>
-        <TouchableOpacity
-            style={styles.itemRow}
-            onPress={onPress}
-            activeOpacity={0.7}
-        >
-            <View style={styles.itemLeft}>
-                <MaterialCommunityIcons name={icon} size={22} color={iconColor} />
-                <View style={styles.itemTextContent}>
-                    <Text style={[styles.itemTitle, { color: titleColor }]}>{title}</Text>
-                    {subtitle && <Text style={styles.itemSubtitle}>{subtitle}</Text>}
-                </View>
-            </View>
-            <View style={styles.itemRight}>
-                {badge && (
-                    <View style={[styles.badge, { backgroundColor: badgeColor ? badgeColor + '15' : colors.border }]}>
-                        <Text style={[styles.badgeText, { color: badgeColor || colors.textSecondary }]}>{badge}</Text>
+}: SupportItemProps) => {
+    const { colors } = useTheme();
+    const finalTitleColor = titleColor || colors.textPrimary;
+    const finalIconColor = iconColor || colors.textSecondary;
+
+    return (
+        <>
+            <TouchableOpacity
+                style={styles.itemRow}
+                onPress={onPress}
+                activeOpacity={0.7}
+            >
+                <View style={styles.itemLeft}>
+                    <MaterialCommunityIcons name={icon} size={22} color={finalIconColor} />
+                    <View style={styles.itemTextContent}>
+                        <Text style={[styles.itemTitle, { color: finalTitleColor }]}>{title}</Text>
+                        {subtitle && <Text style={[styles.itemSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text>}
                     </View>
-                )}
-                {showExternal && (
-                    <MaterialCommunityIcons name="chevron-right" size={20} color={colors.disabled} />
-                )}
-            </View>
-        </TouchableOpacity>
-        {!isLast && <View style={styles.divider} />}
-    </>
-);
+                </View>
+                <View style={styles.itemRight}>
+                    {badge && (
+                        <View style={[styles.badge, { backgroundColor: badgeColor ? badgeColor + '15' : colors.border }]}>
+                            <Text style={[styles.badgeText, { color: badgeColor || colors.textSecondary }]}>{badge}</Text>
+                        </View>
+                    )}
+                    {showExternal && (
+                        <MaterialCommunityIcons name="chevron-right" size={20} color={colors.disabled} />
+                    )}
+                </View>
+            </TouchableOpacity>
+            {!isLast && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
+        </>
+    );
+};
+
 
 export default function SupportScreen({ onBack }: { onBack: () => void }) {
+    const { colors, spacing, textStyles, isDark } = useTheme();
     const [currentView, setCurrentView] = React.useState<'main' | 'topics' | 'form'>('main');
     const [selectedTopic, setSelectedTopic] = React.useState<'Réclamations' | 'Question' | 'Autres' | null>(null);
+
 
     // Form fields state
     const [subject, setSubject] = React.useState('');
@@ -132,8 +142,8 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
 
     const renderMainView = () => (
         <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.sectionHeader}>CANAUX DE CONTACT</Text>
-            <View style={styles.listContainer}>
+            <Text style={[styles.sectionHeader, { color: colors.brand }]}>CANAUX DE CONTACT</Text>
+            <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <SupportItem
                     icon="message-outline"
                     title="Contacter le support"
@@ -146,8 +156,9 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                 />
             </View>
 
-            <Text style={styles.sectionHeader}>AIDE & INFORMATIONS</Text>
-            <View style={styles.listContainer}>
+
+            <Text style={[styles.sectionHeader, { color: colors.brand }]}>AIDE & INFORMATIONS</Text>
+            <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <SupportItem
                     icon="help-circle-outline"
                     title="FAQ / Centre d'aide"
@@ -172,8 +183,9 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                 />
             </View>
 
-            <Text style={styles.sectionHeader}>LÉGAL</Text>
-            <View style={styles.listContainer}>
+
+            <Text style={[styles.sectionHeader, { color: colors.brand }]}>LÉGAL</Text>
+            <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <SupportItem
                     icon="file-document-outline"
                     title="Conditions Générales (CGU)"
@@ -187,49 +199,51 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                 />
             </View>
 
+
             <View style={styles.footerInfo}>
-                <Text style={styles.footerText}>SALA Pro • Application Officielle</Text>
-                <Text style={styles.footerSub}>ID App: 82.1.0.452</Text>
+                <Text style={[styles.footerText, { color: colors.textSecondary }]}>SALA Pro • Application Officielle</Text>
+                <Text style={[styles.footerSub, { color: colors.disabled }]}>ID App: 82.1.0.452</Text>
             </View>
+
         </ScrollView>
     );
 
     const renderTopicSelection = () => (
-        <View style={styles.topicContent}>
-            <Text style={styles.topicTitle}>Quel est l'objet de votre demande ?</Text>
-            <Text style={styles.topicSubtitle}>
+        <View style={[styles.topicContent, { backgroundColor: colors.background }]}>
+            <Text style={[styles.topicTitle, { color: colors.textPrimary }]}>Quel est l'objet de votre demande ?</Text>
+            <Text style={[styles.topicSubtitle, { color: colors.textSecondary }]}>
                 Sélectionnez une catégorie pour nous aider à traiter votre demande plus rapidement.
             </Text>
 
             <View style={styles.topicGrid}>
                 <TouchableOpacity
-                    style={styles.topicButton}
+                    style={[styles.topicButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     onPress={() => handleTopicSelect('Réclamations')}
                 >
                     <View style={[styles.topicIcon, { backgroundColor: colors.error + '10' }]}>
                         <MaterialCommunityIcons name="alert-circle-outline" size={32} color={colors.error} />
                     </View>
-                    <Text style={styles.topicLabel}>Réclamations</Text>
+                    <Text style={[styles.topicLabel, { color: colors.textPrimary }]}>Réclamations</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={styles.topicButton}
+                    style={[styles.topicButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     onPress={() => handleTopicSelect('Question')}
                 >
                     <View style={[styles.topicIcon, { backgroundColor: colors.brand + '10' }]}>
                         <MaterialCommunityIcons name="help-rhombus-outline" size={32} color={colors.brand} />
                     </View>
-                    <Text style={styles.topicLabel}>Question</Text>
+                    <Text style={[styles.topicLabel, { color: colors.textPrimary }]}>Question</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={styles.topicButton}
+                    style={[styles.topicButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     onPress={() => handleTopicSelect('Autres')}
                 >
                     <View style={[styles.topicIcon, { backgroundColor: colors.disabled + '20' }]}>
                         <MaterialCommunityIcons name="dots-horizontal-circle-outline" size={32} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.topicLabel}>Autres</Text>
+                    <Text style={[styles.topicLabel, { color: colors.textPrimary }]}>Autres</Text>
                 </TouchableOpacity>
             </View>
 
@@ -237,24 +251,25 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                 style={styles.cancelTopic}
                 onPress={() => setCurrentView('main')}
             >
-                <Text style={styles.cancelTopicText}>Annuler</Text>
+                <Text style={[styles.cancelTopicText, { color: colors.textSecondary }]}>Annuler</Text>
             </TouchableOpacity>
         </View>
+
     );
 
     const renderFormView = () => (
         <ScrollView contentContainerStyle={styles.formContainer} keyboardShouldPersistTaps="handled">
-            <Text style={styles.formTitle}>{selectedTopic}</Text>
-            <Text style={styles.formSubtitle}>
+            <Text style={[styles.formTitle, { color: colors.brand }]}>{selectedTopic}</Text>
+            <Text style={[styles.formSubtitle, { color: colors.textSecondary }]}>
                 Veuillez fournir les détails ci-dessous.
             </Text>
 
             <View style={styles.inputGroup}>
                 {selectedTopic === 'Réclamations' ? (
                     <>
-                        <Text style={styles.inputLabel}>N° de commande (Optionnel)</Text>
+                        <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>N° de commande (Optionnel)</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
                             placeholder="Ex: #ORD-12345"
                             value={orderId}
                             onChangeText={setOrderId}
@@ -263,9 +278,9 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                     </>
                 ) : (
                     <>
-                        <Text style={styles.inputLabel}>Sujet *</Text>
+                        <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Sujet *</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
                             placeholder="L'objet de votre demande"
                             value={subject}
                             onChangeText={setSubject}
@@ -274,9 +289,9 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                     </>
                 )}
 
-                <Text style={styles.inputLabel}>Message *</Text>
+                <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Message *</Text>
                 <TextInput
-                    style={[styles.input, styles.textArea]}
+                    style={[styles.input, styles.textArea, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.textPrimary }]}
                     placeholder="Décrivez votre demande en détail..."
                     value={message}
                     onChangeText={setMessage}
@@ -287,12 +302,13 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                 />
             </View>
 
+
             <TouchableOpacity
-                style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                style={[styles.submitButton, { backgroundColor: colors.brand }, isSubmitting && [styles.submitButtonDisabled, { backgroundColor: colors.disabled }]]}
                 onPress={handleSubmit}
                 disabled={isSubmitting}
             >
-                <Text style={styles.submitButtonText}>
+                <Text style={[styles.submitButtonText, { color: colors.surface }]}>
                     {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
                 </Text>
             </TouchableOpacity>
@@ -301,8 +317,9 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
                 style={styles.cancelLink}
                 onPress={() => setCurrentView('topics')}
             >
-                <Text style={styles.cancelLinkText}>Changer d'objet</Text>
+                <Text style={[styles.cancelLinkText, { color: colors.textSecondary }]}>Changer d'objet</Text>
             </TouchableOpacity>
+
         </ScrollView>
     );
 
@@ -317,19 +334,20 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <TouchableOpacity
                     onPress={handleBack}
                     style={styles.backButton}
                 >
                     <MaterialCommunityIcons name="arrow-left" size={24} color={colors.brand} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>
+                <Text style={[styles.headerTitle, { color: colors.brand }]}>
                     {currentView === 'topics' ? 'Objet du contact' : currentView === 'form' ? 'Nouveau ticket' : 'Support & Contact'}
                 </Text>
             </View>
+
 
             {currentView === 'main' ? renderMainView() : currentView === 'topics' ? renderTopicSelection() : renderFormView()}
         </View>
@@ -339,48 +357,43 @@ export default function SupportScreen({ onBack }: { onBack: () => void }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.base,
-        backgroundColor: colors.surface,
+        padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        paddingTop: spacing.lg,
+        paddingTop: 32,
     },
     backButton: {
-        padding: spacing.sm,
-        marginLeft: -spacing.sm,
+        padding: 8,
+        marginLeft: -8,
     },
     headerTitle: {
-        ...textStyles.h3,
-        color: colors.brand,
-        marginLeft: spacing.sm,
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginLeft: 8,
     },
     content: {
-        paddingBottom: spacing.xxxl,
+        paddingBottom: 48,
     },
     sectionHeader: {
-        ...textStyles.label,
-        color: colors.brand,
-        marginHorizontal: spacing.base,
-        marginTop: spacing.xl,
-        marginBottom: spacing.sm,
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginHorizontal: 16,
+        marginTop: 24,
+        marginBottom: 8,
         letterSpacing: 1,
     },
     listContainer: {
-        backgroundColor: colors.surface,
         borderTopWidth: 1,
         borderBottomWidth: 1,
-        borderColor: colors.border,
     },
     itemRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.base,
-        paddingVertical: spacing.lg,
+        padding: 16,
+        paddingVertical: 24,
     },
     itemLeft: {
         flexDirection: 'row',
@@ -395,73 +408,65 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 4,
-        marginRight: spacing.sm,
+        marginRight: 8,
     },
     badgeText: {
-        ...textStyles.label,
         fontSize: 10,
         fontWeight: 'bold',
     },
     itemTextContent: {
-        marginLeft: spacing.md,
+        marginLeft: 12,
     },
     itemTitle: {
-        ...textStyles.bodyBold,
+        fontWeight: 'bold',
         fontSize: 16,
     },
     itemSubtitle: {
-        ...textStyles.caption,
-        color: colors.textSecondary,
+        fontSize: 12,
         marginTop: 2,
     },
     divider: {
         height: 1,
-        backgroundColor: colors.border,
-        marginLeft: spacing.base,
+        marginLeft: 16,
     },
     footerInfo: {
         alignItems: 'center',
-        marginTop: spacing.xxxl,
-        marginBottom: spacing.xl,
+        marginTop: 48,
+        marginBottom: 24,
     },
     footerText: {
-        ...textStyles.captionBold,
-        color: colors.textSecondary,
+        fontWeight: 'bold',
+        fontSize: 12,
     },
     footerSub: {
-        ...textStyles.label,
-        color: colors.disabled,
+        fontSize: 12,
         marginTop: 4,
     },
     topicContent: {
         flex: 1,
-        padding: spacing.base,
-        backgroundColor: colors.background,
+        padding: 16,
     },
     topicTitle: {
-        ...textStyles.h3,
-        color: colors.textPrimary,
-        marginTop: spacing.lg,
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginTop: 24,
         textAlign: 'center',
     },
     topicSubtitle: {
-        ...textStyles.body,
-        color: colors.textSecondary,
+        fontSize: 16,
         textAlign: 'center',
-        marginTop: spacing.sm,
-        marginBottom: spacing.xxl,
+        marginTop: 8,
+        marginBottom: 32,
     },
     topicGrid: {
-        gap: spacing.md,
+        gap: 12,
     },
     topicButton: {
-        backgroundColor: colors.surface,
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.lg,
+        padding: 24,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: colors.border,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -474,78 +479,68 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: spacing.lg,
+        marginRight: 24,
     },
     topicLabel: {
-        ...textStyles.bodyBold,
+        fontWeight: 'bold',
         fontSize: 18,
-        color: colors.textPrimary,
     },
     cancelTopic: {
-        marginTop: spacing.xxxl,
+        marginTop: 48,
         alignItems: 'center',
-        padding: spacing.base,
+        padding: 16,
     },
     cancelTopicText: {
-        ...textStyles.bodyBold,
-        color: colors.textSecondary,
+        fontWeight: 'bold',
     },
     formContainer: {
-        padding: spacing.base,
-        paddingBottom: spacing.xxxl,
+        padding: 16,
+        paddingBottom: 48,
     },
     formTitle: {
-        ...textStyles.h2,
-        color: colors.brand,
-        marginTop: spacing.md,
+        fontSize: 28,
+        fontWeight: 'bold',
+        marginTop: 16,
     },
     formSubtitle: {
-        ...textStyles.body,
-        color: colors.textSecondary,
-        marginBottom: spacing.xl,
+        fontSize: 16,
+        marginBottom: 24,
     },
     inputGroup: {
-        gap: spacing.base,
+        gap: 16,
     },
     inputLabel: {
-        ...textStyles.label,
-        color: colors.textSecondary,
-        marginBottom: spacing.xs,
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginBottom: 4,
     },
     input: {
-        backgroundColor: colors.surface,
         borderWidth: 1,
-        borderColor: colors.border,
         borderRadius: 12,
-        padding: spacing.base,
-        color: colors.textPrimary,
-        ...textStyles.body,
+        padding: 16,
+        fontSize: 16,
     },
     textArea: {
         minHeight: 120,
     },
     submitButton: {
-        backgroundColor: colors.brand,
-        padding: spacing.base,
+        padding: 16,
         borderRadius: 12,
         alignItems: 'center',
-        marginTop: spacing.xl,
+        marginTop: 24,
     },
     submitButtonDisabled: {
-        backgroundColor: colors.disabled,
     },
     submitButtonText: {
-        ...textStyles.bodyBold,
-        color: colors.surface,
+        fontWeight: 'bold',
     },
     cancelLink: {
         alignItems: 'center',
-        marginTop: spacing.base,
-        padding: spacing.sm,
+        marginTop: 16,
+        padding: 8,
     },
     cancelLinkText: {
-        ...textStyles.label,
-        color: colors.textSecondary,
+        fontSize: 12,
         textDecorationLine: 'underline',
     }
 });
