@@ -17,18 +17,26 @@ import {
 } from 'react-native';
 import { useTheme } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { authService } from '../../services/authService';
+import { ActivityIndicator, Alert } from 'react-native';
 
 
 interface LoginScreenProps {
+    mode: 'login' | 'register';
     onContinue: (identity: string) => void;
     onBack: () => void;
 }
 
-export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
+export default function LoginScreen({ mode, onContinue, onBack }: LoginScreenProps) {
     const { colors, spacing, textStyles, isDark } = useTheme();
     const [identity, setIdentity] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
+    const validatePhone = (text: string) => {
+        const phoneRegex = /^(?:\+212|0)([5-7]\d{8})$/; // Moroccan phone number format
+        return phoneRegex.test(text);
+    };
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -38,11 +46,44 @@ export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
             duration: 800,
             useNativeDriver: true,
         }).start();
+
+        // Load rememberMe data
+        const loadRememberMe = async () => {
+            const saved = await authService.getRememberedIdentity();
+            if (saved) {
+                setIdentity(saved);
+                setRememberMe(true);
+            }
+        };
+        loadRememberMe();
     }, []); // Run only once
 
-    const handleContinue = () => {
-        if (identity.trim()) {
-            onContinue(identity);
+    const handleContinue = async () => {
+        if (!identity.trim()) return;
+
+        if (!validatePhone(identity.trim())) {
+            Alert.alert('Erreur', 'Veuillez entrer un numéro de téléphone valide (ex: 0612345678).');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            if (rememberMe) {
+                await authService.saveRememberedIdentity(identity.trim());
+            } else {
+                await authService.clearRememberedIdentity();
+            }
+
+            if (mode === 'login') {
+                await authService.login(identity.trim());
+            } else {
+                await authService.register(identity.trim());
+            }
+            onContinue(identity.trim());
+        } catch (error: any) {
+            Alert.alert('Erreur', error.message || 'Échec de la connexion');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -60,32 +101,34 @@ export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
                 <View style={styles.overlay}>
                     <View style={styles.header}>
                         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                            <Ionicons name="arrow-back" size={24} color={colors.surface} />
+                            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
 
                     <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-                        <Text style={[styles.title, { color: colors.surface }]}>Connexion</Text>
-                        <Text style={[styles.subtitle, { color: colors.surface }]}>
-                            Entrez votre numéro de téléphone ou votre e-mail pour continuer.
+                        <Text style={[styles.title, { color: '#FFFFFF' }]}>
+                            {mode === 'login' ? 'Connexion' : 'Inscription'}
+                        </Text>
+                        <Text style={[styles.subtitle, { color: '#FFFFFF' }]}>
+                            Entrez votre numéro de téléphone pour continuer.
                         </Text>
 
                         <View style={[styles.inputContainer, { backgroundColor: isDark ? colors.surface + 'EE' : 'rgba(255,255,255,0.95)' }]}>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                                 <Ionicons
-                                    name="person-outline"
+                                    name="phone-portrait-outline"
                                     size={20}
                                     color={colors.textSecondary}
                                     style={styles.inputIcon}
                                 />
                                 <TextInput
                                     style={[styles.input, { color: colors.textPrimary }]}
-                                    placeholder="Téléphone ou e-mail"
+                                    placeholder="ex: 0612345678"
                                     placeholderTextColor={colors.textSecondary}
                                     value={identity}
                                     onChangeText={setIdentity}
                                     autoCapitalize="none"
-                                    keyboardType="default"
+                                    keyboardType="phone-pad"
                                 />
                             </View>
 
@@ -117,10 +160,14 @@ export default function LoginScreen({ onContinue, onBack }: LoginScreenProps) {
                                     !identity && [styles.continueButtonDisabled, { backgroundColor: colors.disabled }],
                                 ]}
                                 onPress={handleContinue}
-                                disabled={!identity}
+                                disabled={!identity || isLoading}
                                 activeOpacity={0.8}
                             >
-                                <Text style={[styles.continueButtonText, { color: colors.textOnPrimary }]}>Continuer</Text>
+                                {isLoading ? (
+                                    <ActivityIndicator color={colors.textOnPrimary} />
+                                ) : (
+                                    <Text style={[styles.continueButtonText, { color: colors.textOnPrimary }]}>Continuer</Text>
+                                )}
                             </TouchableOpacity>
 
                             <Text style={[styles.guidanceText, { color: colors.textSecondary }]}>

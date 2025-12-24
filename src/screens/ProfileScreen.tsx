@@ -16,6 +16,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import type { ThemeMode } from '../theme';
+import { authService } from '../services/authService';
 
 
 
@@ -93,10 +94,27 @@ const SubViewHeader = ({ title, onBack }: { title: string; onBack: () => void })
 };
 
 
-export default function ProfileScreen({ onNavigate }: { onNavigate?: (route: string) => void }) {
+export default function ProfileScreen({
+    onNavigate,
+    onLogout,
+    onAuthAction
+}: {
+    onNavigate?: (route: string) => void;
+    onLogout?: () => void;
+    onAuthAction?: (action: 'login' | 'register') => void;
+}) {
     const { colors, spacing, textStyles, mode, setThemeMode, isDark } = useTheme();
     const [currentView, setCurrentView] = useState<SubView>('menu');
-    const [status, setStatus] = useState<AccountStatus>('pending');
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const loadUser = async () => {
+            const userData = await authService.getUser();
+            setUser(userData);
+        };
+        loadUser();
+    }, []);
+
     const fadeAnim = useState(new Animated.Value(0))[0];
 
     useEffect(() => {
@@ -108,133 +126,128 @@ export default function ProfileScreen({ onNavigate }: { onNavigate?: (route: str
         }).start();
     }, [currentView]);
 
-    const getStatusConfig = (s: AccountStatus) => {
-        switch (s) {
-            case 'approved':
-                return { label: 'Approuvé', color: colors.success, bg: isDark ? '#1A3326' : '#EAF7F0', icon: 'check-decagram' as const };
-            case 'suspended':
-                return { label: 'Suspendu', color: colors.error, bg: isDark ? '#3D1B1B' : '#FDECEC', icon: 'alert-octagon' as const };
-            default:
-                return { label: 'En attente', color: colors.brand, bg: isDark ? '#2D1F3D' : '#F2EBFF', icon: 'clock-outline' as const };
-        }
+    const handleLogout = () => {
+        Alert.alert(
+            "Déconnexion",
+            "Êtes-vous sûr de vouloir vous déconnecter ?",
+            [
+                { text: "Annuler", style: "cancel" },
+                {
+                    text: "Déconnexion",
+                    style: "destructive",
+                    onPress: () => onLogout?.()
+                }
+            ]
+        );
     };
 
-    const statusConfig = getStatusConfig(status);
+    const renderUnauthenticated = () => (
+        <Animated.View style={[styles.unauthContainer, { opacity: fadeAnim }]}>
+            <View style={[styles.unauthIconCircle, { backgroundColor: colors.surface }]}>
+                <MaterialCommunityIcons name="account-lock-outline" size={60} color={colors.brand} />
+            </View>
+            <Text style={[styles.unauthTitle, { color: colors.textPrimary }]}>Accès Restreint</Text>
+            <Text style={[styles.unauthSubtitle, { color: colors.textSecondary }]}>
+                Veuillez vous connecter ou créer un compte pour accéder à votre profil et gérer vos commandes.
+            </Text>
 
-    const renderMenu = () => (
-        <Animated.View style={{ opacity: fadeAnim }}>
-            <Text style={[styles.screenTitle, { color: colors.brand }]}>Profil</Text>
-
-            {/* Professional Header - Clickable to Personal Info */}
             <TouchableOpacity
-                style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
-                onPress={() => setCurrentView('personal_info')}
-                activeOpacity={0.7}
+                style={[styles.authButton, { backgroundColor: colors.brand }]}
+                onPress={() => onAuthAction?.('login')}
             >
-                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                    <MaterialCommunityIcons name="account" size={44} color={colors.textSecondary} />
-                </View>
-                <View style={styles.headerInfo}>
-                    <Text style={[styles.fullName, { color: colors.textPrimary }]}>Mohamed El Amrani</Text>
-                    <Text style={[styles.livreurId, { color: colors.textSecondary }]}>Livreur ID: LIV-88294</Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-                    <Text style={[styles.statusLabel, { color: statusConfig.color }]}>
-                        {statusConfig.label}
-                    </Text>
-                </View>
-                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.disabled} style={{ marginLeft: spacing.sm }} />
+                <Text style={[styles.authButtonText, { color: colors.textOnPrimary }]}>Se connecter</Text>
             </TouchableOpacity>
 
-            {/* Account & Compliance Group */}
-            <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>COMPTE & COMPLIANCE</Text>
-            <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <ListItem
-                    icon="shield-check-outline"
-                    title="État du compte"
-                    value={statusConfig.label}
-                    badge={status === 'pending' ? 'Validation en cours' : undefined}
-                    badgeColor={colors.brand}
-                    onPress={() => setCurrentView('status')}
-                />
-                <ListItem
-                    icon="account-card-outline"
-                    title="Identité et documents"
-                    badge="3 documents"
-                    onPress={() => setCurrentView('documents')}
-                />
-                <ListItem
-                    icon="account-outline"
-                    title="Informations personnelles"
-                    onPress={() => setCurrentView('personal_info')}
-                    isLast
-                />
-            </View>
+            <TouchableOpacity
+                style={[styles.authButtonOutline, { borderColor: colors.brand }]}
+                onPress={() => onAuthAction?.('register')}
+            >
+                <Text style={[styles.authButtonTextOutline, { color: colors.brand }]}>S'inscrire</Text>
+            </TouchableOpacity>
 
-            {/* App Settings */}
-            <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>PARAMÈTRES DE L'APP</Text>
+            {/* App Settings available even when logged out */}
+            <Text style={[styles.sectionHeader, { color: colors.textSecondary, marginTop: 48 }]}>PARAMÈTRES DE L'APP</Text>
             <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <ListItem icon="bell-outline" title="Notifications" onPress={() => onNavigate?.('Notifications')} />
                 <ListItem icon="translate" title="Langue" value="Français" onPress={() => onNavigate?.('Language')} />
                 <ListItem
                     icon="theme-light-dark"
                     title="Thème"
                     value={mode === 'system' ? 'Système' : mode === 'dark' ? 'Sombre' : 'Clair'}
                     onPress={() => setCurrentView('theme_selector')}
+                    isLast
                 />
-                <ListItem icon="file-document-outline" title="Documents légaux" onPress={() => { }} />
-                <ListItem icon="headphones" title="Support & Contact" onPress={() => onNavigate?.('Support')} isLast />
             </View>
-
-            <TouchableOpacity style={styles.logoutButton}>
-                <MaterialCommunityIcons name="logout" size={20} color={colors.textSecondary} />
-                <Text style={[styles.logoutText, { color: colors.textSecondary }]}>Déconnexion</Text>
-            </TouchableOpacity>
-
-            <View style={styles.footer}>
-                <Text style={[styles.version, { color: colors.disabled }]}>SALA Pro • v2.1.0 (Build 452)</Text>
-            </View>
-
-
-            {/* Hidden toggle for testing */}
-            <TouchableOpacity
-                style={{ height: 40, opacity: 0.05 }}
-                onPress={() => setStatus(s => s === 'pending' ? 'approved' : s === 'approved' ? 'suspended' : 'pending')}
-            />
         </Animated.View>
     );
 
-    const renderStatusView = () => (
-        <Animated.View style={{ opacity: fadeAnim }}>
-            <SubViewHeader title="État du compte" onBack={() => setCurrentView('menu')} />
+    const renderMenu = () => {
+        if (!user) return renderUnauthenticated();
 
-            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={styles.cardHeader}>
-                    <MaterialCommunityIcons name={statusConfig.icon} size={32} color={statusConfig.color} />
-                    <View style={styles.cardHeaderInfo}>
-                        <Text style={[styles.cardTitle, { color: statusConfig.color }]}>{statusConfig.label}</Text>
-                        <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>Mise à jour le 12 Dec 2025</Text>
+        return (
+            <Animated.View style={{ opacity: fadeAnim }}>
+                <Text style={[styles.screenTitle, { color: colors.brand }]}>Profil</Text>
+
+                {/* Header - Clickable to Personal Info */}
+                <TouchableOpacity
+                    style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+                    onPress={() => setCurrentView('personal_info')}
+                    activeOpacity={0.7}
+                >
+                    <View style={[styles.avatarPlaceholder, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                        <MaterialCommunityIcons name="account" size={44} color={colors.textSecondary} />
                     </View>
-                </View>
-                <Text style={[styles.cardDescription, { color: colors.textSecondary }]}>
-                    {status === 'pending'
-                        ? 'Votre dossier est actuellement en cours de vérification par nos agents de conformité. Cela prend généralement 24h à 48h.'
-                        : status === 'approved'
-                            ? 'Votre compte est pleinement vérifié. Vous avez accès à toutes les fonctionnalités de SALA Pro.'
-                            : 'Accès restreint. Veuillez contacter le support pour résoudre les problèmes de conformité.'}
-                </Text>
-            </View>
+                    <View style={styles.headerInfo}>
+                        <Text style={[styles.fullName, { color: colors.textPrimary }]}>{user.name || 'Utilisateur SALA'}</Text>
+                        <Text style={[styles.phoneNumberText, { color: colors.textSecondary }]}>{user.phoneNumber}</Text>
+                    </View>
+                    <MaterialCommunityIcons name="chevron-right" size={20} color={colors.disabled} style={{ marginLeft: spacing.sm }} />
+                </TouchableOpacity>
 
-            {status === 'pending' && (
-                <View style={[styles.stepsContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Text style={[styles.stepsTitle, { color: colors.textSecondary }]}>Prochaines étapes</Text>
-                    <ListItem icon="check-circle" iconColor={colors.success} title="Analyse des documents" showChevron={false} />
-                    <ListItem icon="clock-outline" iconColor={colors.brand} title="Vérification manuelle" showChevron={false} />
-                    <ListItem icon="circle-outline" iconColor={colors.disabled} title="Activation finale" showChevron={false} isLast />
+                {/* Account Settings Group */}
+                <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>MON COMPTE</Text>
+                <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <ListItem
+                        icon="account-outline"
+                        title="Informations personnelles"
+                        onPress={() => setCurrentView('personal_info')}
+                    />
+                    <ListItem
+                        icon="shield-key-outline"
+                        title="Sécurité & Confidentialité"
+                        onPress={() => { }}
+                        isLast
+                    />
                 </View>
-            )}
-        </Animated.View>
-    );
+
+                {/* App Settings */}
+                <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>PARAMÈTRES DE L'APP</Text>
+                <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <ListItem icon="bell-outline" title="Notifications" onPress={() => onNavigate?.('Notifications')} />
+                    <ListItem icon="translate" title="Langue" value="Français" onPress={() => onNavigate?.('Language')} />
+                    <ListItem
+                        icon="theme-light-dark"
+                        title="Thème"
+                        value={mode === 'system' ? 'Système' : mode === 'dark' ? 'Sombre' : 'Clair'}
+                        onPress={() => setCurrentView('theme_selector')}
+                    />
+                    <ListItem icon="file-document-outline" title="Documents légaux" onPress={() => { }} />
+                    <ListItem icon="headphones" title="Support & Contact" onPress={() => onNavigate?.('Support')} isLast />
+                </View>
+
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <MaterialCommunityIcons name="logout" size={20} color={colors.error} />
+                    <Text style={[styles.logoutText, { color: colors.error }]}>Déconnexion</Text>
+                </TouchableOpacity>
+
+                <View style={styles.footer}>
+                    <Text style={[styles.version, { color: colors.disabled }]}>SALA Client • v2.1.0</Text>
+                </View>
+
+            </Animated.View>
+        );
+    };
+
+
 
     const renderThemeSelectorView = () => (
         <Animated.View style={{ opacity: fadeAnim }}>
@@ -278,67 +291,21 @@ export default function ProfileScreen({ onNavigate }: { onNavigate?: (route: str
         </Animated.View>
     );
 
-
-    const renderDocumentsView = () => (
-        <Animated.View style={{ opacity: fadeAnim }}>
-            <SubViewHeader title="Identité et documents" onBack={() => setCurrentView('menu')} />
-
-            <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>DOCUMENTS VALIDÉS</Text>
-            <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <ListItem
-                    icon="account-card-outline"
-                    title="Carte d'Identité (CIN)"
-                    badge="Vérifié"
-                    badgeColor={colors.success}
-                    onPress={() => { }}
-                />
-            </View>
-
-            <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>DOCUMENTS EN ATTENTE</Text>
-            <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <ListItem
-                    icon="card-account-details-outline"
-                    title="Permis de conduire"
-                    value="Expire 12/2026"
-                    onPress={() => { }}
-                />
-                <ListItem
-                    icon="face-recognition"
-                    title="Vérification Selfie (Liveness)"
-                    badge="Action requise"
-                    badgeColor={colors.brand}
-                    onPress={() => { }}
-                    isLast
-                />
-            </View>
-
-            <View style={[styles.infoBox, { backgroundColor: isDark ? '#1E1E1E' : '#F8F9FA', borderColor: colors.border }]}>
-                <MaterialCommunityIcons name="information-outline" size={20} color={colors.textSecondary} />
-                <Text style={[styles.infoBoxText, { color: colors.textSecondary }]}>
-                    Pour mettre à jour un document expiré, veuillez contacter le support ou attendre l'approbation du document actuel.
-                </Text>
-            </View>
-        </Animated.View>
-    );
-
-
     const renderPersonalInfoView = () => (
         <Animated.View style={{ opacity: fadeAnim }}>
             <SubViewHeader title="Informations personnelles" onBack={() => setCurrentView('menu')} />
 
             <View style={[styles.listContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <ListItem icon="phone-outline" title="Téléphone" value="+212 6 12 34 56 78" showChevron={false} />
-                <ListItem icon="email-outline" title="Email" value="m.elamrani@email.com" showChevron={false} />
-                <ListItem icon="map-marker-outline" title="Ville de résidence" value="Casablanca" showChevron={false} />
-                <ListItem icon="crosshairs-gps" title="Zone d'opération" value="Maarif, Gauthier" showChevron={false} isLast />
+                <ListItem icon="phone-outline" title="Téléphone" value={user?.phoneNumber || ''} showChevron={false} />
+                <ListItem icon="map-marker-outline" title="Ville" value={user?.city || 'Non renseignée'} showChevron={false} isLast />
             </View>
 
             <TouchableOpacity
                 style={styles.modifyAction}
-                onPress={() => Alert.alert("Modification", "Toute modification de vos informations personnelles nécessitera une nouvelle validation de votre compte.")}
+                onPress={() => Alert.alert("Modification", "Veuillez contacter le support pour modifier vos informations personnelles.")}
             >
                 <MaterialCommunityIcons name="pencil-outline" size={24} color={colors.accent} />
-                <Text style={[styles.modifyActionText, { color: colors.accent }]}>Modifier mes informations</Text>
+                <Text style={[styles.modifyActionText, { color: colors.accent }]}>Demander une modification</Text>
             </TouchableOpacity>
         </Animated.View>
     );
@@ -347,8 +314,6 @@ export default function ProfileScreen({ onNavigate }: { onNavigate?: (route: str
     return (
         <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
             {currentView === 'menu' && renderMenu()}
-            {currentView === 'status' && renderStatusView()}
-            {currentView === 'documents' && renderDocumentsView()}
             {currentView === 'personal_info' && renderPersonalInfoView()}
             {currentView === 'theme_selector' && renderThemeSelectorView()}
         </ScrollView>
@@ -393,18 +358,8 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
-    livreurId: {
+    phoneNumberText: {
         fontSize: 12,
-    },
-    statusBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 8,
-    },
-    statusLabel: {
-        fontWeight: 'bold',
-        fontSize: 10,
-        textTransform: 'uppercase',
     },
     sectionHeader: {
         fontSize: 11,
@@ -427,17 +382,20 @@ const styles = StyleSheet.create({
     listItemLeft: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
     },
     listItemTitle: {
         fontSize: 16,
         marginLeft: 16,
+        flex: 1,
     },
     listItemRight: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginLeft: 12,
     },
     listItemValue: {
-        fontSize: 12,
+        fontSize: 14, // Slightly larger for better readability
         marginRight: 4,
     },
     inlineBadge: {
@@ -548,5 +506,62 @@ const styles = StyleSheet.create({
     },
     version: {
         fontSize: 10,
-    }
+    },
+    unauthContainer: {
+        flex: 1,
+        padding: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 500,
+    },
+    unauthIconCircle: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    unauthTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    unauthSubtitle: {
+        fontSize: 14,
+        textAlign: 'center',
+        lineHeight: 20,
+        marginBottom: 40,
+        opacity: 0.7,
+    },
+    authButton: {
+        width: '100%',
+        height: 56,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    authButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    authButtonOutline: {
+        width: '100%',
+        height: 56,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+    },
+    authButtonTextOutline: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });

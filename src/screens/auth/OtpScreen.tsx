@@ -12,19 +12,23 @@ import {
 } from 'react-native';
 import { useTheme } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
+import { authService } from '../../services/authService';
+import { ActivityIndicator, Alert } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface OtpScreenProps {
     identity: string;
+    mode: 'login' | 'register';
     onVerify: (code: string) => void;
     onBack: () => void;
 }
 
-export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps) {
+export default function OtpScreen({ identity, mode, onVerify, onBack }: OtpScreenProps) {
     const { colors, spacing, textStyles, isDark } = useTheme();
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(59);
+    const [isLoading, setIsLoading] = useState(false);
     const inputs = useRef<Array<TextInput | null>>([]);
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -57,7 +61,25 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
 
         // If all digits are filled, auto-verify
         if (newCode.every((digit) => digit !== '') && newCode.length === 6) {
-            onVerify(newCode.join(''));
+            handleVerify(newCode.join(''));
+        }
+    };
+
+    const handleVerify = async (otpCode: string) => {
+        console.log(`[OTP] handleVerify called with code: ${otpCode}, current isLoading: ${isLoading}`);
+        if (isLoading) return;
+        setIsLoading(true);
+        try {
+            const response = await authService.verifyOtp(identity, otpCode);
+            console.log('[OTP] Verification successful, calling onVerify');
+            onVerify(response.user);
+        } catch (error: any) {
+            Alert.alert('Erreur', error.message || 'Code de vérification invalide');
+            // Clear code on error?
+            setCode(['', '', '', '', '', '']);
+            inputs.current[0]?.focus();
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -145,13 +167,17 @@ export default function OtpScreen({ identity, onVerify, onBack }: OtpScreenProps
                                 style={[
                                     styles.verifyButton,
                                     { backgroundColor: colors.accent },
-                                    code.some((d) => !d) && [styles.verifyButtonDisabled, { backgroundColor: colors.disabled }],
+                                    (code.some((d) => !d) || isLoading) && [styles.verifyButtonDisabled, { backgroundColor: colors.disabled }],
                                 ]}
-                                onPress={() => onVerify(code.join(''))}
-                                disabled={code.some((d) => !d)}
+                                onPress={() => handleVerify(code.join(''))}
+                                disabled={code.some((d) => !d) || isLoading}
                                 activeOpacity={0.8}
                             >
-                                <Text style={[styles.verifyButtonText, { color: colors.textOnPrimary }]}>Vérifier</Text>
+                                {isLoading ? (
+                                    <ActivityIndicator color={colors.textOnPrimary} />
+                                ) : (
+                                    <Text style={[styles.verifyButtonText, { color: colors.textOnPrimary }]}>Vérifier</Text>
+                                )}
                             </TouchableOpacity>
                         </View>
                     </Animated.View>

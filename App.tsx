@@ -5,21 +5,38 @@ import SplashScreen from './src/screens/SplashScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import OtpScreen from './src/screens/auth/OtpScreen';
+import ProfileSetupScreen from './src/screens/auth/ProfileSetupScreen';
 import MainContainer from './src/screens/MainContainer';
 import { ThemeProvider, useTheme } from './src/theme';
+import { authService } from './src/services/authService';
+import { useEffect } from 'react';
 
-type Screen = 'splash' | 'welcome' | 'login' | 'otp' | 'main';
+type Screen = 'splash' | 'welcome' | 'login' | 'otp' | 'profile_setup' | 'main';
+type AuthMode = 'login' | 'register';
 
 function AppContent() {
   const { isDark } = useTheme();
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [userIdentity, setUserIdentity] = useState('');
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
+  console.log(`[APP] AppContent rendered. currentScreen: ${currentScreen}, isDark: ${isDark}`);
 
-  const handleSplashFinish = () => {
-    setCurrentScreen('welcome');
+  const handleSplashFinish = async () => {
+    const token = await authService.getToken();
+    if (token) {
+      setCurrentScreen('main');
+    } else {
+      setCurrentScreen('welcome');
+    }
   };
 
   const handleWelcomeLogin = () => {
+    setAuthMode('login');
+    setCurrentScreen('login');
+  };
+
+  const handleWelcomeRegister = () => {
+    setAuthMode('register');
     setCurrentScreen('login');
   };
 
@@ -28,8 +45,15 @@ function AppContent() {
     setCurrentScreen('otp');
   };
 
-  const handleOtpVerify = (code: string) => {
-    console.log('Verifying code:', code);
+  const handleOtpVerify = () => {
+    if (authMode === 'register') {
+      setCurrentScreen('profile_setup');
+    } else {
+      setCurrentScreen('main');
+    }
+  };
+
+  const handleProfileComplete = () => {
     setCurrentScreen('main');
   };
 
@@ -45,7 +69,18 @@ function AppContent() {
     setCurrentScreen('main');
   };
 
+  const handleLogout = async () => {
+    await authService.logout();
+    setCurrentScreen('welcome');
+  };
+
+  const handleAuthAction = (action: 'login' | 'register') => {
+    setAuthMode(action);
+    setCurrentScreen('login');
+  };
+
   const renderScreen = () => {
+    console.log(`[APP] Rendering screen: ${currentScreen}`);
     switch (currentScreen) {
       case 'splash':
         return <SplashScreen onFinish={handleSplashFinish} />;
@@ -53,13 +88,14 @@ function AppContent() {
         return (
           <WelcomeScreen
             onLogin={handleWelcomeLogin}
-            onRegister={handleWelcomeLogin}
+            onRegister={handleWelcomeRegister}
             onSkip={handleSkip}
           />
         );
       case 'login':
         return (
           <LoginScreen
+            mode={authMode}
             onContinue={handleLoginContinue}
             onBack={handleBackToWelcome}
           />
@@ -68,12 +104,20 @@ function AppContent() {
         return (
           <OtpScreen
             identity={userIdentity}
+            mode={authMode}
             onVerify={handleOtpVerify}
             onBack={handleBackToLogin}
           />
         );
+      case 'profile_setup':
+        return <ProfileSetupScreen onComplete={handleProfileComplete} />;
       case 'main':
-        return <MainContainer />;
+        return (
+          <MainContainer
+            onLogout={handleLogout}
+            onAuthAction={handleAuthAction}
+          />
+        );
       default:
         return <SplashScreen onFinish={handleSplashFinish} />;
     }

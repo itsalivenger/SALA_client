@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-
+/Sala_main_server
 # Expo
 .expo/
 dist/

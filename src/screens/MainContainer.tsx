@@ -20,7 +20,12 @@ import SalaServiceScreen from '../screens/SalaServiceScreen';
 type TabName = 'Accueil' | 'Historique' | 'Profil';
 type SubRoute = 'SalaServices' | 'Notifications' | 'Language' | 'Support' | null;
 
-export default function MainContainer() {
+interface MainContainerProps {
+    onLogout: () => void;
+    onAuthAction: (action: 'login' | 'register') => void;
+}
+
+export default function MainContainer({ onLogout, onAuthAction }: MainContainerProps) {
     const { colors } = useTheme();
     const [activeTab, setActiveTab] = useState<TabName>('Accueil');
     const [subRoute, setSubRoute] = useState<SubRoute>(null);
@@ -49,7 +54,13 @@ export default function MainContainer() {
             case 'Historique':
                 return <HistoryScreen />;
             case 'Profil':
-                return <ProfileScreen onNavigate={(route) => setSubRoute(route as SubRoute)} />;
+                return (
+                    <ProfileScreen
+                        onNavigate={(route) => setSubRoute(route as SubRoute)}
+                        onLogout={onLogout}
+                        onAuthAction={onAuthAction}
+                    />
+                );
             default:
                 return <HomeScreen onNavigate={(route) => setSubRoute(route as SubRoute)} />;
         }
