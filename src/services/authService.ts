@@ -38,7 +38,43 @@ export const authService = {
      */
     updateProfile: async (name: string, city: string) => {
         const token = await AsyncStorage.getItem(TOKEN_KEY);
-        return api.put('/client/auth/profile', { name, city }, {
+        const response = await api.put('/client/auth/profile', { name, city }, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.success && response.user) {
+            await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.user));
+        }
+
+        return response;
+    },
+
+    /**
+     * Support Reclamations
+     */
+    createReclamation: async (category: string, subject: string, message: string, orderId?: string) => {
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+        return api.post('/client/support/reclamations', { category, subject, message, orderId }, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    },
+
+    getReclamations: async () => {
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+        return api.get('/client/support/reclamations', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    },
+
+    sendReclamationMessage: async (reclamationId: string, text: string) => {
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+        return api.post(`/client/support/reclamations/${reclamationId}/messages`, { text }, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -81,6 +117,35 @@ export const authService = {
 
     clearRememberedIdentity: async () => {
         await AsyncStorage.removeItem('@sala_remembered_identity');
+    },
+
+    /**
+     * Phone Number Change
+     */
+    requestPhoneChange: async (newPhoneNumber: string) => {
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+        return api.post('/client/auth/phone-change/request', { newPhoneNumber }, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    },
+
+    verifyPhoneChange: async (newPhoneNumber: string, code: string) => {
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+        const response = await api.post('/client/auth/phone-change/verify', { newPhoneNumber, code }, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Update token and user if successful
+        if (response.success && response.token) {
+            await AsyncStorage.setItem(TOKEN_KEY, response.token);
+            await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.user));
+        }
+
+        return response;
     }
 };
 

@@ -21,6 +21,7 @@ import { useTheme } from '../../theme';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { authService } from '../../services/authService';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CityPicker } from '../../components/CityPicker';
 
 interface ProfileSetupScreenProps {
     onComplete: () => void;
@@ -46,6 +47,11 @@ export default function ProfileSetupScreen({ onComplete }: ProfileSetupScreenPro
     const handleSave = async () => {
         if (!name.trim()) {
             Alert.alert('Erreur', 'Veuillez entrer votre nom');
+            return;
+        }
+
+        if (!city.trim()) {
+            Alert.alert('Erreur', 'Veuillez entrer votre ville');
             return;
         }
 
@@ -92,18 +98,13 @@ export default function ProfileSetupScreen({ onComplete }: ProfileSetupScreenPro
                                 />
                             </View>
 
-                            {/* City Input */}
+                            {/* City Picker */}
                             <Text style={[styles.label, { color: colors.textSecondary }]}>Ville</Text>
-                            <View style={[styles.inputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                                <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
-                                <TextInput
-                                    style={[styles.input, { color: colors.textPrimary }]}
-                                    placeholder="Ex: Casablanca"
-                                    placeholderTextColor={colors.textSecondary}
-                                    value={city}
-                                    onChangeText={setCity}
-                                />
-                            </View>
+                            <CityPicker
+                                value={city}
+                                onSelect={setCity}
+                                placeholder="Sélectionnez votre ville"
+                            />
 
 
                             <TouchableOpacity
@@ -113,7 +114,7 @@ export default function ProfileSetupScreen({ onComplete }: ProfileSetupScreenPro
                                     (!name || isLoading) && [styles.saveButtonDisabled, { backgroundColor: colors.disabled }],
                                 ]}
                                 onPress={handleSave}
-                                disabled={!name || isLoading}
+                                disabled={!name.trim() || !city.trim() || isLoading}
                                 activeOpacity={0.8}
                             >
                                 {isLoading ? (

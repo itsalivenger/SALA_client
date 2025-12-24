@@ -23,8 +23,14 @@ function AppContent() {
 
   const handleSplashFinish = async () => {
     const token = await authService.getToken();
+    const user = await authService.getUser();
+
     if (token) {
-      setCurrentScreen('main');
+      if (user?.status === 'Pending') {
+        setCurrentScreen('profile_setup');
+      } else {
+        setCurrentScreen('main');
+      }
     } else {
       setCurrentScreen('welcome');
     }
@@ -45,8 +51,8 @@ function AppContent() {
     setCurrentScreen('otp');
   };
 
-  const handleOtpVerify = () => {
-    if (authMode === 'register') {
+  const handleOtpVerify = (user: any) => {
+    if (user?.status === 'Pending') {
       setCurrentScreen('profile_setup');
     } else {
       setCurrentScreen('main');

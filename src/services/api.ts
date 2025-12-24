@@ -11,7 +11,7 @@
 
 // --- CONFIGURATION ---
 // Replace '127.0.0.1' with your computer's local IP if testing on a physical device.
-const LOCAL_IP = '192.168.43.219';
+const LOCAL_IP = '192.168.11.113';
 
 const getBaseUrl = () => {
     if (__DEV__) {

@@ -8,7 +8,7 @@ export const APP_LINKS = {
     faq: 'https://sala.pro/faq-livreur',
 
     // User Guide / Video tutorial
-    tutorial: 'https://sala.pro/tutoriel-livreur',
+    tutorial: 'https://youtube.com/',
 
     // Rules for Livreur
     rules: 'https://sala.pro/regles-livreur',
